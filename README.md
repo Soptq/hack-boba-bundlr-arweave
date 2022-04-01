@@ -1,17 +1,26 @@
-# Bundlr Network Browser Client Demo
+# Boba, Bundlr & Arweave
 
-This app demonstrates usage of the [`bundlr-client`](https://github.com/Bundlr-Network/js-client) to upload data
-to the [Bundlr Network](https://bundlr.network) using any `web3provider` exposed by the [Ethers library](https://github.com/ethers-io/ethers.js), including Metamask or WalletConnect.
+![](./src/architecture.png)
 
-## Usage
+As we can see, this figure illustrates the main architecture of our application. Basically we want to provide database-alike API for developers to CURD (Create, Update, Read, Delete). To achieve that, we deployed a smart contract on BOBA network named `ArweaveStorageManager` (V2), which acts like a storage pointer that points to the file ID stored in Arweave. Moreover, we implement full encryption to this workflow so the uploaded data can only be read by authorized wallets. What’s more, based on Database API, Encryption and our ArweaveStorageManager Contract, we go one step further, and achieves a POC for cloud drive, meaning users can create contents, sharing them to others and possibly making profits on it.
 
-1. Connect Metamask or WalletConnect (ensure your wallet is connected to Polygon)
-2. Provide address of the bundlr network node to connect to and sign the requested message to initiate bundlr network connection
-3. Click "Get Matic Balance" to view your current balance with the selected bundlr network node
-4. Enter an amount (in MATIC) to fund the bundlr with
-5. Select any file from your device to upload to the network
-6. Click "Upload to Bundlr Network" and sign the requested message to initiate an upload.  
+## Features:
+- Storage Pointer: Using contract as a pointer that points to the actual file ID. Instead of using file ID to retrieve file on Arweave, users can now query the contract for the latest file ID, and then getting file.  Thus, data can be modified at will on Arweave.
+- Database API: Simple and intuitive CRUD API for developers to read and write data on Arweave.
+- Secure Storage: ECDH and AES are used to encrypt and decrypt data for better user experiences, performance and security.
+- File Sharing: users can share their files to others, possibly making profits.
+
+Live Version: 
+
+Youtube demonstration: https://youtu.be/bdVn6lSpPYk
+
+## Installation
+
+1. Fork this repo.
+2. `yarn install` to install dependencies.
+3. `yarn start` to start a local server
+ 
 
 ## Notes
 
-This app uses [`web3-react`](https://github.com/NoahZinsmeister/web3-react) to connect with Metamask and WalletConnect.  A full explanation of integrating any specific web3 wallet provider can be found there.
+Feel free to open a issue if there is any problem.

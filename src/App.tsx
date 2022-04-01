@@ -296,8 +296,12 @@ function App() {
       if (!initialize) {
         const otherPubkeys = await storageContract?.getPubkeys();
         for (const pubkey of otherPubkeys) {
-//      @ts-ignore
-          wrappedData.access[pubkey] = encrypt(pubkey, _password);
+          try {
+            // @ts-ignore
+            wrappedData.access[pubkey] = encrypt(pubkey, _password);
+          } catch (e) {
+            console.error(e);
+          }
         }
       }
     }
@@ -308,15 +312,33 @@ function App() {
   return (
     <Block width="500px">
       <HeadingLevel>
-        <Heading>Welcome to BABO</Heading>
-        <Paragraph2>
-          In this demo web application, you can interact with Arweave with just your BABO wallet, powered by Bundlr Network.
-          This demo runs on BABO Rinkeby Testnet, you can bridge your ETH Rinkeby tokens to BABO Rinkeby using <a href="https://gateway.rinkeby.boba.network/">BABO Gateway</a>
-        </Paragraph2>
-        <Paragraph2>
+        <Heading>BOBA, Bundlr & Arweave</Heading>
+        <ParagraphSmall>
+          In this demo web application, you can interact with Arweave with just your BOBA wallet, powered by Bundlr Network.
+          This demo runs on BOBA Rinkeby Testnet, you can bridge your ETH Rinkeby tokens to BOBA Rinkeby using <a href="https://gateway.rinkeby.boba.network/">BOBA Gateway</a>.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          In theory, users can use whatever tokens they want to pay for the gas fee, as they can simply swap their desired tokens to ETH using DEX. However, we don’t automate this process in this application due to 1. low liquidity for pairs on the Testnet and 2. security concerns.
+        </ParagraphSmall>
+        <ParagraphSmall>
           Here is our whole story:
-        </Paragraph2>
+        </ParagraphSmall>
         <img src={pngArchitecture} alt={"Architecture"} style={{height: "100%", width: "100%"}}/>
+        <ParagraphSmall>
+          Basically we want to provide database-alike API for developers to CURD (Create, Update, Read, Delete). To achieve that, we deployed a smart contract on BOBA network named `ArweaveStorageManager` (V2), which acts like a storage pointer that points to the file ID stored in Arweave. Moreover, we implement full encryption to this workflow so the uploaded data can only be read by authorized wallets. What’s more, based on Database API, Encryption and our ArweaveStorageManager Contract, we go one step further, and achieves a POC for cloud drive, meaning users can create contents, sharing them to others and possibly making profits on it.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          - Storage Pointer: Using contract as a pointer that points to the actual file ID. Instead of using file ID to retrieve file on Arweave, users can now query the contract for the latest file ID, and then getting file.  Thus, data can be modified at will on Arweave.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          - Database API: Simple and intuitive CRUD API for developers to read and write data on Arweave.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          - Secure Storage: ECDH and AES are used to encrypt and decrypt data for better user experiences, performance and security.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          - File Sharing: users can share their files to others, possibly making profits.
+        </ParagraphSmall>
         <HeadingLevel><Heading>Read File</Heading></HeadingLevel>
         <ParagraphSmall>
           In this section you would be able to access files stored on Arweave by providing ID.
@@ -338,10 +360,11 @@ function App() {
             Access File in Browser
           </Button>
         </div>
+        <div style={{marginTop: 64, marginBottom: 64}}/>
         <HeadingLevel><Heading>Upload File</Heading></HeadingLevel>
-        <Paragraph2>
-          In this section you would be able to upload your file to Arweave for permanent storing. You don't need to prepare an AR wallet or to purchase AR token for gas fee, all you need is a BABO wallet with some ETH tokens.
-        </Paragraph2>
+        <ParagraphSmall>
+          In this section you would be able to upload your file to Arweave for permanent storing. You don't need to prepare an AR wallet or to purchase AR token for gas fee, all you need is a BOBA wallet with some ETH tokens. You actually can use any token you want, just swap them for ETH using DEX ;)
+        </ParagraphSmall>
         <ProgressSteps current={uploadStep}>
           <Step title="Connect with Metamask">
             {!connected &&
@@ -426,6 +449,7 @@ function App() {
                   }}>
                     Check Balance
                   </Button>
+                  <div style={{marginTop: 8, marginBottom: 8}}/>
                   <Input
                       value={customFundingValue}
                       onChange={e => setCustomFundingValue((e.currentTarget as HTMLInputElement).value)}
@@ -471,11 +495,14 @@ function App() {
             </Button>
           </Step>
         </ProgressSteps>
+        <div style={{marginTop: 64, marginBottom: 64}}/>
         <HeadingLevel><Heading>Contract as a Arweave pointer</Heading></HeadingLevel>
-        <Paragraph2>
-          As it can be seen from previous section, every time the content is changed, the ID is changed as well, making the file difficult to follow on Arweave. To address problem, we can deploy a simple contract to store the current Arweave ID, like a pointer in RAM.
+        <ParagraphSmall>
+          As it can be seen from previous section, every time the content is changed, the ID is changed as well, making the file difficult to follow on Arweave. To address this problem, we can deploy a simple contract to store the current File ID, like a pointer in RAM.
+        </ParagraphSmall>
+        <ParagraphSmall>
           The reason we don't use GraphQL tags here is that its index may cause additional time, making the latency larger.
-        </Paragraph2>
+        </ParagraphSmall>
         <ProgressSteps current={pointerStep}>
           <Step title="Connect with Metamask">
             {!connected &&
@@ -548,12 +575,13 @@ function App() {
             </Button>
           </Step>
         </ProgressSteps>
+        <div style={{marginTop: 64, marginBottom: 64}}/>
         <HeadingLevel><Heading>Combine Them Together: A POC of On-chain Database</Heading></HeadingLevel>
-        <Paragraph2>
-          By combining BOBA, Bundlr and Arweave together, we can build a database that lives on-chain.
-        </Paragraph2>
         <ParagraphSmall>
-          To prevent raw user data from directly exposing to the general public, it is optional to enable encryption. The encryption is achieved by Elliptic-curve Diffie–Hellman (ECDH) with AES. That is, message is encrypted by AES, and the passphrase for AES encryption is also encrypted by user's public key. The reason of using two encryption here is 1. to reduce encrypted message size (AES) and therefore reduce fee, and 2. for latter usage, you will know it very soon. Note that we derive user's public key by calling RPC method provided by Metamask Desktop, consequently, currently database encryption can only be enabled with Metamask Desktop.
+          By combining BOBA, Bundlr and Arweave together, we can build a database that lives on-chain.
+        </ParagraphSmall>
+        <ParagraphSmall>
+          To prevent raw user data from directly being exposed to the general public, it is optional to enable encryption. The encryption is achieved by Elliptic-curve Diffie–Hellman (ECDH) and AES. That is, message is encrypted by AES, and the passphrase for AES encryption is also encrypted by user's public key. The reason of using two encryptions here are 1. to reduce encrypted message size (AES) and therefore reduce fee, and 2. for latter usage, you will know it very soon. Note that we derive user's public key by calling RPC methods provided by Metamask Desktop, consequently, currently database encryption can only be enabled with Metamask Desktop.
         </ParagraphSmall>
         <ProgressSteps current={databaseStep}>
           <Step title="Connect with Metamask">
@@ -661,7 +689,7 @@ function App() {
             <Button size="compact" isLoading={isFunding} onClick={async () => {
               setDatabaseStep(databaseStep + 1);
             }}>
-              Skip
+              Next Step
             </Button>
           </Step>
           <Step title="Database Initialization">
@@ -728,7 +756,7 @@ function App() {
               setFetching(false);
               setDatabaseStep(databaseStep + 1);
             }}>
-              Skip
+              Next Step
             </Button>
           </Step>
         </ProgressSteps>
@@ -740,12 +768,13 @@ function App() {
               }}>
                 Check Balance
               </Button>
+              <div style={{marginTop: 64, marginBottom: 64}}/>
               <Paragraph2>Database Overview</Paragraph2>
               <ParagraphSmall>Raw Database. Content stored on Arweave and can be accessed by anyone.</ParagraphSmall>
               <CodeBlock text={rawDatabase} wrapLines/>
               <ParagraphSmall>Parsed Database. Content recognized by us (if encryption is enabled).</ParagraphSmall>
               <JSONPretty id="json-pretty-1" data={database}/>
-              <Paragraph2>Add/Update Key Value</Paragraph2>
+              <Paragraph2>Add / Update Key Value</Paragraph2>
               <Input
                   value={databaseWriteKey}
                   onChange={e => setDatabaseWriteKey((e.currentTarget as HTMLInputElement).value)}
@@ -842,14 +871,16 @@ function App() {
               <ParagraphSmall>
                 Value: {databaseReadValue}
               </ParagraphSmall>
+              <div style={{marginTop: 64, marginBottom: 64}}/>
               <ParagraphSmall>
-                So far, we have a working database alike interface for individuals to do CRUD directly to the blockchain. Everything here is decentralized, from content creating to content distributing. A question raises: can we go one step further?
+                So far, we have a working database alike API for individuals to do CRUD directly to the blockchain. Everything here is decentralized, from content creating to content distributing. A question raises: can we go one step further?
               </ParagraphSmall>
+              <div style={{marginTop: 64, marginBottom: 64}}/>
               <HeadingLevel><Heading>A POC for Decentralized Cloud Drive: Creating and Sharing</Heading></HeadingLevel>
-              <Paragraph2>
+              <ParagraphSmall>
                 As a content creator, you can share you content with others by making it public in the ArweaveStorageManagerContract. You can specify a fee to take if others want to see your content.
-              </Paragraph2>
-              <Paragraph2>When others want to see your content, they will pay your required fee to gain access. However, this access will only take effect from the next time you update the content. Consequently, content owners are required to update their content after users purchasing in order to withdraw the earned fee.</Paragraph2>
+              </ParagraphSmall>
+              <ParagraphSmall>When others want to see your content, they will pay your required fee to gain access. However, this access will only take effect from the next time you update the content. Consequently, content owners are required to update their content after users purchasing in order to withdraw the earned fee.</ParagraphSmall>
               <ParagraphSmall>Your Storage is {isPublic ? "Public" : "Private"}</ParagraphSmall>
               <Button size="compact" isLoading={isFetching} onClick={async () => {
                 const _public = await storageContract?.isPublic(address);
@@ -949,9 +980,10 @@ function App() {
               }}>
                 Harvest All
               </Button>
-              <Paragraph2>
+              <div style={{marginTop: 64, marginBottom: 64}}/>
+              <ParagraphSmall>
                 On the other hand, you can also purchase access to other users' content.
-              </Paragraph2>
+              </ParagraphSmall>
               <ParagraphSmall>Purchase Access</ParagraphSmall>
               <Input
                   value={purchaseContentAddress}
@@ -1040,9 +1072,14 @@ function App() {
         ) : (
             <div>
               <HeadingLevel><Heading>There are something hidden here...</Heading></HeadingLevel>
-              <Paragraph2>Please complete the `Database Initialization` section to reveal ;)</Paragraph2>
+              <ParagraphSmall>Please complete the `Database Initialization` section to reveal ;)</ParagraphSmall>
+              <div style={{marginTop: 128, marginBottom: 512}}/>
             </div>
         )}
+        <HeadingLevel><Heading>That's all!</Heading></HeadingLevel>
+        <ParagraphSmall>
+          Thank you for your interests. You can check the code of this project at {<a href="https://github.com/Soptq/hack-boba-bundlr-arweave">Here</a>}, Live version is here: . There is also a youtube demonstration video you can check at {<a href="https://youtu.be/bdVn6lSpPYk">Here</a>}.
+        </ParagraphSmall>
         <div style={{marginTop: 64, marginBottom: 64}}/>
       </HeadingLevel>
     </Block>

@@ -10,7 +10,7 @@ As we can see, this figure illustrates the main architecture of our application.
 - Secure Storage: ECDH and AES are used to encrypt and decrypt data for better user experiences, performance and security.
 - File Sharing: users can share their files to others, possibly making profits.
 
-Live Version: 
+Live Version: https://hack-boba-bundlr-arweave.vercel.app/
 
 Youtube demonstration: https://youtu.be/bdVn6lSpPYk
 

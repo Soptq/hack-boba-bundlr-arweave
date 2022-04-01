@@ -1078,7 +1078,7 @@ function App() {
         )}
         <HeadingLevel><Heading>That's all!</Heading></HeadingLevel>
         <ParagraphSmall>
-          Thank you for your interests. You can check the code of this project at {<a href="https://github.com/Soptq/hack-boba-bundlr-arweave">Here</a>}, Live version is here: . There is also a youtube demonstration video you can check at {<a href="https://youtu.be/bdVn6lSpPYk">Here</a>}.
+          Thank you for your interests. You can check the code of this project at {<a href="https://github.com/Soptq/hack-boba-bundlr-arweave">here</a>}, Live version is {<a href="https://hack-boba-bundlr-arweave.vercel.app/">here</a>}. There is also a youtube demonstration video you can check at {<a href="https://youtu.be/bdVn6lSpPYk">here</a>}.
         </ParagraphSmall>
         <div style={{marginTop: 64, marginBottom: 64}}/>
       </HeadingLevel>

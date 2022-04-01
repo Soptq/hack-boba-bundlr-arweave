@@ -1,6 +1,8 @@
 # Boba, Bundlr & Arweave
 
-![](./src/architecture.png)
+a POC can allow users to interact with Arweave with just their BOBA wallet, powered by Bundlr Network.
+
+![architecture](./src/architecture.png)
 
 As we can see, this figure illustrates the main architecture of our application. Basically we want to provide database-alike API for developers to CURD (Create, Update, Read, Delete). To achieve that, we deployed a smart contract on BOBA network named `ArweaveStorageManager` (V2), which acts like a storage pointer that points to the file ID stored in Arweave. Moreover, we implement full encryption to this workflow so the uploaded data can only be read by authorized wallets. What’s more, based on Database API, Encryption and our ArweaveStorageManager Contract, we go one step further, and achieves a POC for cloud drive, meaning users can create contents, sharing them to others and possibly making profits on it.
 

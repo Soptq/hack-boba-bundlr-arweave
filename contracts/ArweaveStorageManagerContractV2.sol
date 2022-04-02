@@ -154,7 +154,6 @@ contract ArweaveStorageManagerContract {
     }
 
     struct WhitelistUser {
-        address _address;
         string pubkey;
         bool harvested;
         uint256 blocknum;
@@ -265,7 +264,6 @@ contract ArweaveStorageManagerContract {
         whitelistIndex[owner][msg.sender] = whitelist[owner].length;
 
         WhitelistUser memory whitelistUser;
-        whitelistUser._address = msg.sender;
         whitelistUser.pubkey = pubkey;
         whitelistUser.harvested = false;
         whitelistUser.blocknum = block.number;

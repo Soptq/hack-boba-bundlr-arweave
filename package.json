@@ -6,7 +6,7 @@
   "homepage": "./",
   "dependencies": {
     "@babel/core": "7.12.3",
-    "@bundlr-network/client": "0.6.1-rc2",
+    "@bundlr-network/client": "0.6.5",
     "@emotion/react": "^11.7.0",
     "@emotion/styled": "^11.6.0",
     "@metamask/eth-sig-util": "^4.0.0",

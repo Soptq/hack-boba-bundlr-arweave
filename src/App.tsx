@@ -174,7 +174,7 @@ function App() {
     const _bundlr = new WebBundlr(bundlrRPC, "boba", provider, { providerUrl: networkRPC });
     await _bundlr.ready();
     // @ts-ignore
-    _bundlr.currencyConfig.minConfirm = 0;
+    // _bundlr.currencyConfig.minConfirm = 0;
     setbundlr(_bundlr);
     enqueue({
       message: 'bundlr initialized!',

@@ -35,6 +35,8 @@ import contractBytecode from "./contracts/ArweaveStorageManagerContractBytecodeV
 import pngArchitecture from "./architecture.png"
 import {ethers} from "ethers/lib.esm";
 
+import './App.css';
+
 const networkChainId = "0x1c";
 const networkRPC = "https://rinkeby.boba.network/";
 const bundlrHttpRPC = "https://devnet.bundlr.network";
@@ -49,6 +51,7 @@ function App() {
 
   // access
   const [accessFileTx, setAccessFileTx] = useState("");
+  const [fundTxID, setFundTxID] = useState<String | undefined>();
 
   // upload
   const [uploadedFileTx, setUploadedFileTx] = useState<BundlrTransaction>();
@@ -171,10 +174,10 @@ function App() {
   }
 
   const initializeBundlr = async () => {
-    const _bundlr = new WebBundlr(bundlrRPC, "boba", provider, { providerUrl: networkRPC });
+    const _bundlr = new WebBundlr(bundlrRPC, "boba-eth", provider, { providerUrl: networkRPC });
     await _bundlr.ready();
-    // @ts-ignore
-    // _bundlr.currencyConfig.minConfirm = 0;
+    _bundlr.currencyConfig.isSlow = true;
+    console.log(_bundlr);
     setbundlr(_bundlr);
     enqueue({
       message: 'bundlr initialized!',
@@ -188,11 +191,25 @@ function App() {
   const fundAmount = async (amount: BigNumber) => {
     setFunding(true);
     try {
-      await bundlr?.fund(amount)
+      const result = await bundlr?.fund(amount)
+      setFundTxID(result?.id);
       setFunding(false);
     } catch (e) {
+      console.error(e);
       setFunding(false);
       return;
+    }
+  }
+
+  const postTxid = async () => {
+    if (fundTxID) {
+      await bundlr?.utils.api.post(`/account/balance/boba-eth`, {tx_id: fundTxID})
+          .catch(_ => {
+            enqueue({
+              message: `failed to post funding tx - ${fundTxID} - This is common on BOBA Rinkeby Testnet as the it is not active enough, please try again few minutes later :)`,
+              startEnhancer: ({size}) => <Delete size={size}/>,
+            });
+          })
     }
   }
 
@@ -442,6 +459,7 @@ function App() {
                     Fund Needed
                   </Button>
                   <Button size="compact" onClick={async () => {
+                    await postTxid();
                     setBundlrBalance(await bundlr?.getLoadedBalance() || new BigNumber(0));
                     if (bundlrBalance.isGreaterThan(uploadedFileCost)) {
                       setUploadStep(uploadStep + 1);
@@ -461,6 +479,7 @@ function App() {
                   <Button size="compact" isLoading={isFunding} onClick={async () => {
                     // @ts-ignore
                     try {
+                      await postTxid();
                       await fundAmount(new BigNumber(customFundingValue));
                       setBundlrBalance(await bundlr?.getLoadedBalance() || new BigNumber(0));
                       if (bundlrBalance.isGreaterThan(uploadedFileCost)) {
@@ -695,6 +714,7 @@ function App() {
           <Step title="Database Initialization">
             <ParagraphSmall>Your Balance: {bundlr?.utils.unitConverter(bundlrBalance).toString()}</ParagraphSmall>
             <Button size="compact" onClick={async () => {
+              await postTxid();
               setBundlrBalance(await bundlr?.getLoadedBalance() || new BigNumber(0));
             }}>
               Check Balance
@@ -764,6 +784,7 @@ function App() {
             <div>
               <ParagraphSmall>Your Balance: {bundlr?.utils.unitConverter(bundlrBalance).toString()}</ParagraphSmall>
               <Button size="compact" onClick={async () => {
+                await postTxid();
                 setBundlrBalance(await bundlr?.getLoadedBalance() || new BigNumber(0));
               }}>
                 Check Balance
@@ -773,7 +794,7 @@ function App() {
               <ParagraphSmall>Raw Database. Content stored on Arweave and can be accessed by anyone.</ParagraphSmall>
               <CodeBlock text={rawDatabase} wrapLines/>
               <ParagraphSmall>Parsed Database. Content recognized by us (if encryption is enabled).</ParagraphSmall>
-              <JSONPretty id="json-pretty-1" data={database}/>
+              <JSONPretty id="json-pretty-1" themeClassName="custom-json-pretty" data={database}/>
               <Paragraph2>Add / Update Key Value</Paragraph2>
               <Input
                   value={databaseWriteKey}
@@ -948,7 +969,7 @@ function App() {
                   </Button>
               )}
               <ParagraphSmall>Whitelisted Users for You Content</ParagraphSmall>
-              <JSONPretty id="json-pretty-2" data={whitelist}/>
+              <JSONPretty id="json-pretty-2" themeClassName="custom-json-pretty" data={whitelist}/>
               <Button size="compact" isLoading={isFetching} onClick={async () => {
                 const _whitelist = await storageContract?.getPubkeys();
                 setWhitelist(_whitelist)
@@ -1035,7 +1056,7 @@ function App() {
                 Purchase
               </Button>
               <ParagraphSmall>Read Purchased Database</ParagraphSmall>
-              <JSONPretty id="json-pretty-3" data={addressDatabase}/>
+              <JSONPretty id="json-pretty-3" themeClassName="custom-json-pretty" data={addressDatabase}/>
               <Button size="compact" disabled={!isAddressPublic || !isAddressWhitelisted} isLoading={isFetching} onClick={async () => {
                 setFetching(true);
                 const [, dataObject] = await fetchDatabase(purchaseContentAddress, encryptionPubkey);

@@ -14,7 +14,7 @@ As we can see, this figure illustrates the main architecture of our application.
 
 Live Version: https://hack-boba-bundlr-arweave.vercel.app/
 
-Youtube demonstration: https://youtu.be/bdVn6lSpPYk
+Youtube demonstration: https://youtu.be/tbVjToh6pA4
 
 ## Installation
 

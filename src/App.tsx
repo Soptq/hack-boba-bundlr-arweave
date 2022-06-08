@@ -34,17 +34,43 @@ import contractABI from "./contracts/ArweaveStorageManagerContractABIV2.json";
 import contractBytecode from "./contracts/ArweaveStorageManagerContractBytecodeV2.json";
 import pngArchitecture from "./architecture.png"
 import {ethers} from "ethers/lib.esm";
+import udLOGO from './imgs/ud.png';
 
 import './App.css';
 
+import {useWeb3React} from '@web3-react/core';
+import {UAuthConnector} from '@uauth/web3-react';
+import {InjectedConnector} from '@web3-react/injected-connector';
+import {WalletConnectConnector} from '@web3-react/walletconnect-connector';
+import UAuth from '@uauth/js';
+
 const networkChainId = "0x1c";
+const networkChainIdDecimal = 28;
 const networkRPC = "https://rinkeby.boba.network/";
 const bundlrHttpRPC = "https://devnet.bundlr.network";
+const polygonProvider = new ethers.providers.JsonRpcProvider("https://polygon-rpc.com");
+
+const injected = new InjectedConnector({supportedChainIds: [networkChainIdDecimal]})
+
+const walletconnect = new WalletConnectConnector({
+  infuraId: process.env.REACT_APP_INFURA_ID!,
+  qrcode: true,
+})
+
+const uauth = new UAuthConnector({
+  uauth: new UAuth({
+    clientID: process.env.REACT_APP_CLIENT_ID!,
+    redirectUri: process.env.REACT_APP_REDIRECT_URI!,
+    scope: 'openid wallet',
+  }),
+  connectors: {injected, walletconnect},
+})
 
 function App() {
   const [connected, setConnected] = useState(false);
   const [provider, setProvider] = useState<Web3Provider>();
   const [address, setAddress] = useState<string | undefined>("");
+  const [resolved, setResolved] = useState<string | undefined>("");
   const [bundlrRPC, setbundlrRPC] = React.useState(bundlrHttpRPC);
   const [bundlr, setbundlr] = useState<WebBundlr>();
   const [bundlrBalance, setBundlrBalance] = useState<BigNumber>(new BigNumber(0));
@@ -97,6 +123,8 @@ function App() {
   const [isAddressWhitelisted, setAddressWhitelisted] = useState(false);
   const [addressRequiredFee, setAddressRequiredFee] = useState("");
   const [addressDatabase, setAddressDatabase] = useState({});
+
+  const { activate } = useWeb3React()
   const { enqueue } = useSnackbar();
 
   const resetUploadState = () => {
@@ -107,6 +135,25 @@ function App() {
     setUploading(false);
     setUploaded(false);
     setUploadStep(2);
+  }
+
+  const reverseResolution = async (address: string) => {
+    const proxyReaderAddress = "0xa9a6A3626993D487d2Dbda3173cf58cA1a9D9e9f";
+
+    // partial ABI, just for the reverseOf function.
+    const proxyReaderAbi = [
+      "function reverseOf(address addr) external view returns (uint256)",
+    ];
+
+    const proxyReaderContract = new ethers.Contract(
+        proxyReaderAddress,
+        proxyReaderAbi,
+        polygonProvider
+    );
+
+    const reverseResolutionTokenId = await proxyReaderContract.reverseOf(address);
+    const response = await fetch(`https://resolve.unstoppabledomains.com/metadata/${reverseResolutionTokenId}`)
+    return (await response.json()).name;
   }
 
   // add Boba network to metamask
@@ -161,8 +208,31 @@ function App() {
     }
     const _provider = new providers.Web3Provider(window.ethereum);
     await _provider._ready();
+    const address = await _provider?.getSigner().getAddress();
+    const resolved = await reverseResolution(address);
     setProvider(_provider);
-    setAddress(await _provider?.getSigner().getAddress());
+    setAddress(address);
+    setResolved(resolved);
+    setConnected(true);
+    enqueue({
+      message: 'Wallet connected!',
+      startEnhancer: ({size}) => <Check size={size} />,
+    })
+    setUploadStep(uploadStep + 1);
+    setPointerStep(pointerStep + 1);
+    setDatabaseStep(databaseStep + 1);
+  }
+
+  const connectUD = async () => {
+    await activate(uauth);
+    // @ts-ignore
+    const provider = await uauth._subConnector.getProvider();
+    // @ts-ignore
+    const address = await uauth._subConnector.getAccount();
+    const resolved = await reverseResolution(address);
+    setProvider(provider);
+    setAddress(address);
+    setResolved(resolved);
     setConnected(true);
     enqueue({
       message: 'Wallet connected!',
@@ -384,10 +454,41 @@ function App() {
         </ParagraphSmall>
         <ProgressSteps current={uploadStep}>
           <Step title="Connect with Metamask">
-            {!connected &&
-            <Button size="compact" onClick={connectWallet}>
-              Connect
-            </Button>
+            {!connected && (
+                <div>
+                  <Button size="compact" onClick={connectWallet}>
+                    Connect
+                  </Button>
+                  <Button
+                      overrides={{
+                        BaseButton: {
+                          style: ({ $theme }) => ({
+                            marginLeft: "10px",
+                            background: "rgb(75, 71, 238)",
+                            ":hover": {
+                              background: "rgb(11, 36, 179)",
+                              color: "white",
+                            },
+                            ":active": {
+                              background: "rgb(83, 97, 199)",
+                              color: "white",
+                            }
+                          })
+                        }
+                      }}
+                      onClick={connectUD}
+                      size="compact"
+                      startEnhancer={
+                          <img style={{height: "10px", display: "inline-block", verticalAlign: "middle"}}
+                               src={udLOGO}
+                               alt="UnstoppableDomain Logo"
+                          />
+                        }
+                  >
+                      Login with Unstoppable
+                  </Button>
+                </div>
+            )
             }
           </Step>
           <Step title="Initialize Bundlr Network">
@@ -407,7 +508,15 @@ function App() {
                 />
                 <div style={{marginTop: 8, marginBottom: 8}}/>
                 <StyledLink href={`https://blockexplorer.rinkeby.boba.network/address/${address}`}>
-                  {address}
+                  {
+                    (() => {
+                      if (resolved) {
+                        return `${address} (Reverse Resolved as ${resolved})`
+                      } else {
+                        return address
+                      }
+                    })()
+                  }
                 </StyledLink>
                 <ParagraphSmall>bundlr RPC:</ParagraphSmall>
                 <Input
@@ -524,10 +633,41 @@ function App() {
         </ParagraphSmall>
         <ProgressSteps current={pointerStep}>
           <Step title="Connect with Metamask">
-            {!connected &&
-            <Button size="compact" onClick={connectWallet}>
-              Connect
-            </Button>
+            {!connected && (
+                <div>
+                  <Button size="compact" onClick={connectWallet}>
+                    Connect
+                  </Button>
+                  <Button
+                      overrides={{
+                        BaseButton: {
+                          style: ({ $theme }) => ({
+                            marginLeft: "10px",
+                            background: "rgb(75, 71, 238)",
+                            ":hover": {
+                              background: "rgb(11, 36, 179)",
+                              color: "white",
+                            },
+                            ":active": {
+                              background: "rgb(83, 97, 199)",
+                              color: "white",
+                            }
+                          })
+                        }
+                      }}
+                      onClick={connectUD}
+                      size="compact"
+                      startEnhancer={
+                        <img style={{height: "10px", display: "inline-block", verticalAlign: "middle"}}
+                             src={udLOGO}
+                             alt="UnstoppableDomain Logo"
+                        />
+                      }
+                  >
+                    Login with Unstoppable
+                  </Button>
+                </div>
+            )
             }
           </Step>
           <Step title="Deploy or use deployed contract">
@@ -604,10 +744,41 @@ function App() {
         </ParagraphSmall>
         <ProgressSteps current={databaseStep}>
           <Step title="Connect with Metamask">
-            {!connected &&
-            <Button size="compact" onClick={connectWallet}>
-              Connect
-            </Button>
+            {!connected && (
+              <div>
+                <Button size="compact" onClick={connectWallet}>
+                  Connect
+                </Button>
+                <Button
+                    overrides={{
+                      BaseButton: {
+                        style: ({ $theme }) => ({
+                          marginLeft: "10px",
+                          background: "rgb(75, 71, 238)",
+                          ":hover": {
+                            background: "rgb(11, 36, 179)",
+                            color: "white",
+                          },
+                          ":active": {
+                            background: "rgb(83, 97, 199)",
+                            color: "white",
+                          }
+                        })
+                      }
+                    }}
+                    onClick={connectUD}
+                    size="compact"
+                    startEnhancer={
+                      <img style={{height: "10px", display: "inline-block", verticalAlign: "middle"}}
+                           src={udLOGO}
+                           alt="UnstoppableDomain Logo"
+                      />
+                    }
+                >
+                  Login with Unstoppable
+                </Button>
+              </div>
+            )
             }
           </Step>
           <Step title="Initialize Bundlr Network">
@@ -627,7 +798,15 @@ function App() {
                   />
                   <div style={{marginTop: 8, marginBottom: 8}}/>
                   <StyledLink href={`https://blockexplorer.rinkeby.boba.network/address/${address}`}>
-                    {address}
+                    {
+                      (() => {
+                        if (resolved) {
+                          return `${address} (Reverse Resolved as ${resolved})`
+                        } else {
+                          return address
+                        }
+                      })()
+                    }
                   </StyledLink>
                   <ParagraphSmall>bundlr RPC:</ParagraphSmall>
                   <Input

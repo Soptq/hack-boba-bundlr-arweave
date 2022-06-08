@@ -6,6 +6,8 @@ import { Client as Styletron } from 'styletron-engine-atomic';
 import { Provider as StyletronProvider } from 'styletron-react';
 import { SnackbarProvider } from "baseui/snackbar";
 import { styled } from 'baseui';
+import { Web3ReactProvider } from '@web3-react/core'
+import { Web3Provider } from "@ethersproject/providers";
 
 const engine = new Styletron();
 
@@ -16,12 +18,18 @@ const Centered = styled('div', {
     height: '100%',
 });
 
+function getLibrary(provider: any) {
+    return new Web3Provider(provider);
+}
+
 ReactDOM.render(
   <React.StrictMode>
       <StyletronProvider value={engine}>
           <SnackbarProvider>
               <Centered>
-                <App />
+                  <Web3ReactProvider getLibrary={getLibrary}>
+                    <App />
+                  </Web3ReactProvider>
               </Centered>
           </SnackbarProvider>
       </StyletronProvider>

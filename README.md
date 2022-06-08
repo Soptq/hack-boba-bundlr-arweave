@@ -6,6 +6,14 @@ a POC can allow users to interact with Arweave with just their BOBA wallet, powe
 
 As we can see, this figure illustrates the main architecture of our application. Basically we want to provide database-alike API for developers to CURD (Create, Update, Read, Delete). To achieve that, we deployed a smart contract on BOBA network named `ArweaveStorageManager` (V2), which acts like a storage pointer that points to the file ID stored in Arweave. Moreover, we implement full encryption to this workflow so the uploaded data can only be read by authorized wallets. What’s more, based on Database API, Encryption and our ArweaveStorageManager Contract, we go one step further, and achieves a POC for cloud drive, meaning users can create contents, sharing them to others and possibly making profits on it.
 
+## Updates
+
+This application is now integrated with both `Login with Unstoppable` and `Domain resolution` feature.
+
+Youtube Demo: https://youtu.be/qSuwgBAgkG0
+
+Contact me: Discord handle: Soptq#9775 UD Email: aplenty$dot$brier-0i$at$icloud$dot$com
+
 ## Features:
 - Storage Pointer: Using contract as a pointer that points to the actual file ID. Instead of using file ID to retrieve file on Arweave, users can now query the contract for the latest file ID, and then getting file.  Thus, data can be modified at will on Arweave.
 - Database API: Simple and intuitive CRUD API for developers to read and write data on Arweave.
@@ -25,4 +33,4 @@ Youtube demonstration: https://youtu.be/tbVjToh6pA4
 
 ## Notes
 
-Feel free to open a issue if there is any problem.
+Feel free to open an issue if there is any problem.

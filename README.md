@@ -12,7 +12,7 @@ This application is now integrated with both `Login with Unstoppable` and `Domai
 
 Youtube Demo: https://youtu.be/qSuwgBAgkG0
 
-Live version: 
+Live version: https://hack-boba-bundlr-arweave-ltamzmlhn-soptq.vercel.app/
 
 Contact me: Discord handle: Soptq#9775 UD Email: aplenty$dot$brier-0i$at$icloud$dot$com
 

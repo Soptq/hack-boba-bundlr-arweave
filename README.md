@@ -27,8 +27,9 @@ Youtube demonstration: https://youtu.be/tbVjToh6pA4
 ## Installation
 
 1. Fork this repo.
-2. `yarn install` to install dependencies.
-3. `yarn start` to start a local server
+2. fill missing part in the `.env` file (compared to `.env.sample`)
+3. `yarn install` to install dependencies.
+4. `yarn start` to start a local server
  
 
 ## Notes

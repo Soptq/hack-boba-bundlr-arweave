@@ -22,7 +22,7 @@ Contact me: Discord handle: Soptq#9775 UD Email: aplenty$dot$brier-0i$at$icloud$
 - Secure Storage: ECDH and AES are used to encrypt and decrypt data for better user experiences, performance and security.
 - File Sharing: users can share their files to others, possibly making profits.
 
-Live Version: https://hack-boba-bundlr-arweave.vercel.app/
+Live Version: https://ud-boba-bundlr-arweave.vercel.app/
 
 Youtube demonstration: https://youtu.be/tbVjToh6pA4
 

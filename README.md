@@ -8,7 +8,7 @@ As we can see, this figure illustrates the main architecture of our application.
 
 ## Updates
 
-This application is now integrated with both `Login with Unstoppable` and `Domain resolution` feature.
+This application is now integrated with both `Login with Unstoppable` and `Domain resolution` feature~
 
 Youtube Demo: https://youtu.be/qSuwgBAgkG0
 
